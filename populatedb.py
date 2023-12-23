@@ -57,5 +57,3 @@ for _ in range(100):
 
 for _ in range(100):
     Mechanic_populate()    
-
-
