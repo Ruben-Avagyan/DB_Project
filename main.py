@@ -4,7 +4,7 @@ from models import Car, Mechanic, Order
 from database import Base, engine, SessionLocal
 from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
-
+from typing import List
 
 app = FastAPI()
 Base.metadata.create_all(engine)
@@ -199,3 +199,27 @@ def delete_mechanic(mechanic_id: int, db: Session = Depends(get_db)):
     db.delete(mechanic)
     db.commit()
     return {"message": "mechanic deleted"}
+
+
+@app.get("/car/", response_model=List[Car_response])
+def read_cars(page: int = 0, per_page: int = 10, db: Session = Depends(get_db)):
+    car = db.query(Car).offset(page).limit(per_page).all()
+    if car is None:
+        raise HTTPException(status_code=404, detail='Car not found')
+    return car
+
+
+@app.get("/order/", response_model=List[Order_response])
+def read_orders(page: int = 0, per_page: int = 10, db: Session = Depends(get_db)):
+    order = db.query(order).offset(page).limit(per_page).all()
+    if order is None:
+        raise HTTPException(status_code=404, detail='order not found')
+    return order
+
+
+@app.get("/mechanic/", response_model=List[mechanic_response])
+def read_mechanics(page: int = 0, per_page: int = 10, db: Session = Depends(get_db)):
+    mechanic = db.query(mechanic).offset(page).limit(per_page).all()
+    if mechanic is None:
+        raise HTTPException(status_code=404, detail='mechanic not found')
+    return mechanic
