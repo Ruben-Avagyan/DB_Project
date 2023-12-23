@@ -14,7 +14,7 @@ class Car(Base):
 
 
 class Order(Base):
-    __tablename__ = 'order'
+    __tablename__ = "order"
     id = Column(Integer, primary_key=True)
     date_of_issue = Column(Date)
     price = Column(Integer)
