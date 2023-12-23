@@ -2,9 +2,11 @@ from datetime import date
 from pydantic import BaseModel
 from models import Car, Mechanic, Order
 from database import Base, engine, SessionLocal
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends,Query
 from sqlalchemy.orm import Session
 from typing import List
+from sqlalchemy import update
+
 
 app = FastAPI()
 Base.metadata.create_all(engine)
@@ -223,3 +225,34 @@ def read_mechanics(page: int = 0, per_page: int = 10, db: Session = Depends(get_
     if mechanic is None:
         raise HTTPException(status_code=404, detail='mechanic not found')
     return mechanic
+
+
+@app.get("/cars_by_condition/", response_model=List[Car_response])
+def get_cars_by_condition(
+    year_of_manufacture: int = Query(None, description="Filter by year of manufacture"),
+    brand: str = Query(None, description="Filter by brand"),
+    db: Session = Depends(get_db)
+):
+    conditions = []
+    if year_of_manufacture:
+        conditions.append(Car.year_of_manufacture == year_of_manufacture)
+    if brand:
+        conditions.append(Car.brand == brand)
+
+    cars = db.query(Car).filter(*conditions).all()
+    return cars
+
+
+@app.get("/orders_with_cars/", response_model=List[Order_response])
+def get_orders_with_cars(db: Session = Depends(get_db)):
+    orders = db.query(Order).join(Car).all()
+    return orders
+
+
+@app.put("/update_order_price/{order_id}", response_model=Order_response)
+def update_order_price(order_id: int, new_price: int, db: Session = Depends(get_db)):
+    stmt = update(Order).where(Order.id == order_id).values(price=new_price)
+    db.execute(stmt)
+    db.commit()
+    updated_order = db.query(Order).filter(Order.id == order_id).first()
+    return updated_order
