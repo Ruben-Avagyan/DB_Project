@@ -93,7 +93,7 @@ def post_order(order: Order_create, db: Session=Depends(get_db)):
     return db_order
 
 
-@app.post("/machanic/", response_model=mechanic_response)
+@app.post("/mechanic/", response_model=mechanic_response)
 def post_mechanic(mechanic: mechanic_create, db: Session=Depends(get_db)): 
     db_mechanic = Mechanic(**mechanic.dict())
     db.add(db_mechanic)
